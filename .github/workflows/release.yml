@@ -29,7 +29,7 @@ jobs:
             make build
             if [ -f ./student_records ]; then echo "BINARY=./student_records" >> "$GITHUB_ENV"; fi
           else
-            echo "fpc unavailable; skipping binary build" >> "$GITHUB_STATUS"
+            echo "fpc unavailable; skipping binary build"
           fi
 
       - name: Create or update release
