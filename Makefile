@@ -17,7 +17,9 @@ build: $(BIN)
 
 $(BIN): $(SRC)
 	@if command -v fpc >/dev/null 2>&1; then \
-		fpc -O2 -o $(BIN) $(SRC); \
+		fpc -O2 -o $(BIN) $(SRC) 2>/dev/null || \
+		fpc -O2 -o$(BIN) $(SRC) 2>/dev/null || \
+		fpc -O2 $(SRC); \
 	else \
 		echo "error: fpc is required to build $(PROJECT)"; \
 		echo "install it (see scripts/install.sh) or set PATH"; \
