@@ -1,0 +1,57 @@
+name: Release
+
+permissions:
+  contents: write
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Free Pascal Compiler (best effort)
+        run: |
+          if ! command -v fpc >/dev/null 2>&1; then
+            sudo apt-get update -y
+            sudo apt-get install -y fpc || true
+          fi
+          fpc -iV || true
+
+      - name: Build
+        id: build
+        run: |
+          if command -v fpc >/dev/null 2>&1; then
+            make build
+            if [ -f ./student_records ]; then echo "BINARY=./student_records" >> "$GITHUB_ENV"; fi
+          else
+            echo "fpc unavailable; skipping binary build" >> "$GITHUB_STATUS"
+          fi
+
+      - name: Create or update release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "${{ github.ref_name }}" >/dev/null 2>&1; then
+            gh release edit "${{ github.ref_name }}" \
+              --title "${{ github.ref_name }}" \
+              --notes "See README.md for build and usage instructions. Requires Free Pascal (fpc)."
+          else
+            gh release create "${{ github.ref_name }}" \
+              --title "${{ github.ref_name }}" \
+              --notes "See README.md for build and usage instructions. Requires Free Pascal (fpc)."
+          fi
+
+      - name: Upload build artifact
+        if: env.BINARY != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for i in 1 2 3; do
+            gh release upload "${{ github.ref_name }}" ${{ env.BINARY }} && break
+            sleep 5
+          done

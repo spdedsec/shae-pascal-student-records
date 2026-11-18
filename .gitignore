@@ -1,0 +1,15 @@
+# Compiled artifacts
+student_records
+*.o
+*.ppu
+*.rst
+*.orl
+
+# Runtime data
+records.txt
+*.txt
+
+# Editor / OS
+.*.swp
+*~
+.DS_Store
